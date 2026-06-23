@@ -21,9 +21,7 @@ class PredictionReq(BaseModel):
     away_team : str
 
 
-
-
-@app.post('/')
+@app.post('/predict')
 def predict(data : PredictionReq):
     home_team = data.home_team
     away_team = data.away_team
