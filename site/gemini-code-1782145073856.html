@@ -1,0 +1,463 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006e2a",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#00df5d",
+                        "on-primary-container": "#005c22",
+                        "secondary": "#495e8a",
+                        "on-secondary": "#ffffff",
+                        "background": "#f7f9fb",
+                        "surface": "#f7f9fb",
+                        "on-surface": "#191c1e",
+                        "outline": "#6b7b6a",
+                        "outline-variant": "#bacbb7",
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-container-low": "#f2f4f6"
+                    },
+                    spacing: { "base": "8px", "margin-mobile": "16px", "md": "24px", "lg": "48px", "xs": "4px" },
+                    fontFamily: { "headline-md": ["Montserrat"], "body-md": ["Inter"], "label-sm": ["Inter"] },
+                    fontSize: { "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}], "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}] }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .match-card { box-shadow: 0px 4px 20px rgba(73, 94, 138, 0.05); }
+        
+        @keyframes tap-scale {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        .animate-tap {
+            animation: tap-scale 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes spinner {
+            to {transform: rotate(360deg);}
+        }
+        .animate-spinner {
+            animation: spinner 0.8s linear infinite;
+        }
+        
+        select optgroup {
+            font-weight: 700;
+            color: #006e2a;
+            background-color: #f2f4f6;
+        }
+        select option {
+            font-weight: 400;
+            color: #191c1e;
+            background-color: #ffffff;
+            padding: 8px;
+        }
+
+        .scroll-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scroll-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        body {
+            min-height: max(884px, 100dvh);
+            background-image: radial-gradient(circle at 2px 2px, rgba(0, 110, 42, 0.03) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+
+        .flag-icon {
+            width: 20px;
+            height: 14px;
+            object-fit: cover;
+            border-radius: 2px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border: 0.5px solid rgba(0,0,0,0.05);
+        }
+        
+        .flag-icon-large {
+            width: 32px;
+            height: 22px;
+            object-fit: cover;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface shadow-sm flex justify-between items-center px-margin-mobile py-base z-50">
+
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary uppercase">World Cup Predictor 2026</h1>
+
+</header>
+<main class="max-w-4xl mx-auto px-margin-mobile mt-base">
+<!-- Tab Switcher -->
+<div class="flex p-1 bg-surface-container-high rounded-full mb-md">
+<button class="flex-1 py-2 rounded-full font-semibold text-label-sm transition-all bg-primary text-on-primary" id="tab-predictor" onclick="switchTab('predictor')">
+                Predictor
+            </button>
+<button class="flex-1 py-2 rounded-full font-semibold text-label-sm transition-all text-outline" id="tab-standings" onclick="switchTab('standings')">
+                Standings
+            </button>
+</div>
+<!-- Predictor Section -->
+<div class="block" id="section-predictor">
+<div class="match-card bg-surface-container-lowest rounded-xl p-md border-l-4 border-primary">
+<h2 class="font-headline-md text-primary mb-md">Match Predictor</h2>
+<!-- Error message -->
+<div class="bg-error-container text-error text-label-md p-base rounded-lg mb-md flex items-center gap-2 hidden" id="error-msg">
+<span class="material-symbols-outlined text-[18px]" data-icon="error">error</span>
+<span class="" id="error-text">Please select two different teams.</span>
+</div>
+<div class="flex flex-col items-center gap-md">
+<!-- Home Team Selector -->
+<div class="w-full">
+<label class="block text-label-sm font-semibold text-outline mb-xs uppercase tracking-wider">Home Team</label>
+<div class="relative">
+<select class="w-full p-md pl-12 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all appearance-none cursor-pointer text-on-surface" id="home-team" onchange="updateSelectedFlag('home')">
+<option data-code="" value="">Select Team</option>
+</select>
+<div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center hidden pointer-events-none" id="home-flag-container">
+<img alt="" class="flag-icon-large" id="home-flag-img" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgcng9IjgiIGZpbGw9IiNlOGVhZWQiLz48cGF0aCBkPSJNMTcwIDEzMCBsMzAgNDAgbDIwLTE1IGw0MCA1NSBIMTQweiIgZmlsbD0iI2JkYzFjNiIvPjxjaXJjbGUgY3g9IjI1MCIgY3k9IjEyMCIgcj0iMTgiIGZpbGw9IiNiZGMxYzYiLz48L3N2Zz4=">
+</div>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="font-headline-md text-outline-variant py-2 select-none">VS</div>
+<!-- Away Team Selector -->
+<div class="w-full">
+<label class="block text-label-sm font-semibold text-outline mb-xs uppercase tracking-wider">Away Team</label>
+<div class="relative">
+<select class="w-full p-md pl-12 bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all appearance-none cursor-pointer text-on-surface" id="away-team" onchange="updateSelectedFlag('away')">
+<option data-code="" value="">Select Team</option>
+</select>
+<div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center hidden pointer-events-none" id="away-flag-container">
+<img alt="" class="flag-icon-large" id="away-flag-img" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgcng9IjgiIGZpbGw9IiNlOGVhZWQiLz48cGF0aCBkPSJNMTcwIDEzMCBsMzAgNDAgbDIwLTE1IGw0MCA1NSBIMTQweiIgZmlsbD0iI2JkYzFjNiIvPjxjaXJjbGUgY3g9IjI1MCIgY3k9IjEyMCIgcj0iMTgiIGZpbGw9IiNiZGMxYzYiLz48L3N2Zz4=">
+</div>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+<button class="mt-lg w-full bg-primary-container text-on-primary-container font-headline-md py-md rounded-full transition-all hover:opacity-90 shadow-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" id="predict-btn" onclick="handlePredict(this)">
+<span class="" id="btn-text">Predict Match</span>
+<span class="material-symbols-outlined animate-spinner hidden" data-icon="progress_activity" id="btn-spinner">progress_activity</span>
+</button>
+<button class="mt-4 w-full text-secondary font-semibold py-2 px-4 hover:bg-secondary/10 rounded-full transition-colors flex items-center justify-center gap-2" id="reset-btn" onclick="handleReset()">
+<span class="material-symbols-outlined text-[20px]">restart_alt</span>
+<span class="">Reset Selection</span>
+</button>
+</div>
+</div>
+<!-- Standings Section -->
+<div class="hidden space-y-md" id="section-standings">
+<h2 class="font-headline-md text-primary">Group Standings</h2>
+<div class="grid grid-cols-1 gap-md" id="groups-container">
+<!-- Groups injected by JS -->
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-margin-mobile pb-safe pt-xs bg-surface-container-lowest border-t border-outline-variant shadow-[0px_-4px_20px_rgba(73,94,138,0.05)]">
+<div class="flex flex-col items-center justify-center text-outline px-4 py-1 cursor-pointer">
+
+
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 cursor-pointer transition-all" id="nav-predict" onclick="switchTab('predictor')">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+<span class="text-label-sm">Predictor</span>
+</div>
+
+</nav>
+<script>
+        const groupsData = [
+            { name: "Group A", teams: [
+                { name: "Mexico", code: "mx", gp: 2, w: 2, d: 0, l: 0, gd: 3, pts: 6 },
+                { name: "South Korea", code: "kr", gp: 2, w: 1, d: 0, l: 1, gd: 0, pts: 3 },
+                { name: "Czechia", code: "cz", gp: 2, w: 0, d: 1, l: 1, gd: -1, pts: 1 },
+                { name: "South Africa", code: "za", gp: 2, w: 0, d: 1, l: 1, gd: -2, pts: 1 }
+            ]},
+            { name: "Group B", teams: [
+                { name: "Canada", code: "ca", gp: 2, w: 1, d: 1, l: 0, gd: 6, pts: 4 },
+                { name: "Switzerland", code: "ch", gp: 2, w: 1, d: 1, l: 0, gd: 3, pts: 4 },
+                { name: "Bosnia-Herzegovina", code: "ba", gp: 2, w: 0, d: 1, l: 1, gd: -3, pts: 1 },
+                { name: "Qatar", code: "qa", gp: 2, w: 0, d: 1, l: 1, gd: -6, pts: 1 }
+            ]},
+            { name: "Group C", teams: [
+                { name: "Brazil", code: "br", gp: 2, w: 1, d: 1, l: 0, gd: 3, pts: 4 },
+                { name: "Morocco", code: "ma", gp: 2, w: 1, d: 1, l: 0, gd: 1, pts: 4 },
+                { name: "Scotland", code: "gb-sct", gp: 2, w: 1, d: 0, l: 1, gd: 0, pts: 3 },
+                { name: "Haiti", code: "ht", gp: 2, w: 0, d: 0, l: 2, gd: -4, pts: 0 }
+            ]},
+            { name: "Group D", teams: [
+                { name: "United States", code: "us", gp: 2, w: 2, d: 0, l: 0, gd: 5, pts: 6 },
+                { name: "Australia", code: "au", gp: 2, w: 1, d: 0, l: 1, gd: 0, pts: 3 },
+                { name: "Paraguay", code: "py", gp: 2, w: 1, d: 0, l: 1, gd: -2, pts: 3 },
+                { name: "Türkiye", code: "tr", gp: 2, w: 0, d: 0, l: 2, gd: -3, pts: 0 }
+            ]},
+            { name: "Group E", teams: [
+                { name: "Germany", code: "de", gp: 2, w: 2, d: 0, l: 0, gd: 7, pts: 6 },
+                { name: "Ivory Coast", code: "ci", gp: 2, w: 1, d: 0, l: 1, gd: 0, pts: 3 },
+                { name: "Ecuador", code: "ec", gp: 2, w: 0, d: 1, l: 1, gd: -1, pts: 1 },
+                { name: "Curaçao", code: "cw", gp: 2, w: 0, d: 1, l: 1, gd: -6, pts: 1 }
+            ]},
+            { name: "Group F", teams: [
+                { name: "Netherlands", code: "nl", gp: 2, w: 1, d: 1, l: 0, gd: 4, pts: 4 },
+                { name: "Japan", code: "jp", gp: 2, w: 1, d: 1, l: 0, gd: 4, pts: 4 },
+                { name: "Sweden", code: "se", gp: 2, w: 1, d: 0, l: 1, gd: 0, pts: 3 },
+                { name: "Tunisia", code: "tn", gp: 2, w: 0, d: 0, l: 2, gd: -8, pts: 0 }
+            ]},
+            { name: "Group G", teams: [
+                { name: "Egypt", code: "eg", gp: 2, w: 1, d: 1, l: 0, gd: 2, pts: 4 },
+                { name: "Iran", code: "ir", gp: 2, w: 0, d: 2, l: 0, gd: 0, pts: 2 },
+                { name: "Belgium", code: "be", gp: 2, w: 0, d: 2, l: 0, gd: 0, pts: 2 },
+                { name: "New Zealand", code: "nz", gp: 2, w: 0, d: 1, l: 1, gd: -2, pts: 1 }
+            ]},
+            { name: "Group H", teams: [
+                { name: "Spain", code: "es", gp: 2, w: 1, d: 1, l: 0, gd: 4, pts: 4 },
+                { name: "Uruguay", code: "uy", gp: 2, w: 0, d: 2, l: 0, gd: 0, pts: 2 },
+                { name: "Cape Verde", code: "cv", gp: 2, w: 0, d: 2, l: 0, gd: 0, pts: 2 },
+                { name: "Saudi Arabia", code: "sa", gp: 2, w: 0, d: 1, l: 1, gd: -4, pts: 1 }
+            ]},
+            { name: "Group I", teams: [
+                { name: "Norway", code: "no", gp: 1, w: 1, d: 0, l: 0, gd: 3, pts: 3 },
+                { name: "France", code: "fr", gp: 1, w: 1, d: 0, l: 0, gd: 2, pts: 3 },
+                { name: "Senegal", code: "sn", gp: 1, w: 0, d: 0, l: 1, gd: -2, pts: 0 },
+                { name: "Iraq", code: "iq", gp: 1, w: 0, d: 0, l: 1, gd: -3, pts: 0 }
+            ]},
+            { name: "Group J", teams: [
+                { name: "Argentina", code: "ar", gp: 1, w: 1, d: 0, l: 0, gd: 3, pts: 3 },
+                { name: "Austria", code: "at", gp: 1, w: 1, d: 0, l: 0, gd: 2, pts: 3 },
+                { name: "Jordan", code: "jo", gp: 1, w: 0, d: 0, l: 1, gd: -2, pts: 0 },
+                { name: "Algeria", code: "dz", gp: 1, w: 0, d: 0, l: 1, gd: -3, pts: 0 }
+            ]},
+            { name: "Group K", teams: [
+                { name: "Colombia", code: "co", gp: 1, w: 1, d: 0, l: 0, gd: 2, pts: 3 },
+                { name: "Congo DR", code: "cd", gp: 1, w: 0, d: 1, l: 0, gd: 0, pts: 1 },
+                { name: "Portugal", code: "pt", gp: 1, w: 0, d: 1, l: 0, gd: 0, pts: 1 },
+                { name: "Uzbekistan", code: "uz", gp: 1, w: 0, d: 0, l: 1, gd: -2, pts: 0 }
+            ]},
+            { name: "Group L", teams: [
+                { name: "England", code: "gb-eng", gp: 1, w: 1, d: 0, l: 0, gd: 2, pts: 3 },
+                { name: "Ghana", code: "gh", gp: 1, w: 1, d: 0, l: 0, gd: 1, pts: 3 },
+                { name: "Panama", code: "pa", gp: 1, w: 0, d: 0, l: 1, gd: -1, pts: 0 },
+                { name: "Croatia", code: "hr", gp: 1, w: 0, d: 0, l: 1, gd: -2, pts: 0 }
+            ]}
+        ];
+
+        function getFlagUrl(code) {
+            return `https://flagcdn.com/w80/${code}.png`;
+        }
+
+        function renderStandings() {
+            const container = document.getElementById('groups-container');
+            container.innerHTML = groupsData.map(group => `
+                <div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant shadow-sm">
+                    <div class="bg-primary-container/10 px-md py-2 border-b border-outline-variant flex justify-between items-center">
+                        <h3 class="font-headline-md text-primary text-[18px]">${group.name}</h3>
+                        <span class="text-label-sm text-outline">World Cup 2026</span>
+                    </div>
+                    <div class="overflow-x-auto scroll-hide">
+                        <table class="w-full text-left text-label-sm">
+                            <thead>
+                                <tr class="bg-background text-outline uppercase tracking-wider text-[10px]">
+                                    <th class="px-4 py-2 font-bold w-10">Pos</th>
+                                    <th class="px-2 py-2 font-bold">Team</th>
+                                    <th class="px-2 py-2 font-bold text-center">GP</th>
+                                    <th class="px-2 py-2 font-bold text-center">W</th>
+                                    <th class="px-2 py-2 font-bold text-center">D</th>
+                                    <th class="px-2 py-2 font-bold text-center">L</th>
+                                    <th class="px-2 py-2 font-bold text-center">GD</th>
+                                    <th class="px-4 py-2 font-bold text-center">Pts</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant/30">
+                                ${group.teams.map((team, idx) => `
+                                    <tr class="hover:bg-surface-container-low transition-colors">
+                                        <td class="px-4 py-3 font-semibold text-outline text-center">${idx + 1}</td>
+                                        <td class="px-2 py-3">
+                                            <div class="flex items-center gap-2">
+                                                <img src="${getFlagUrl(team.code)}" alt="${team.name} flag" class="flag-icon">
+                                                <span class="font-semibold text-on-surface truncate max-w-[180px]">${team.name}</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-2 py-3 text-center text-on-surface">${team.gp}</td>
+                                        <td class="px-2 py-3 text-center text-on-surface">${team.w}</td>
+                                        <td class="px-2 py-3 text-center text-on-surface">${team.d}</td>
+                                        <td class="px-2 py-3 text-center text-on-surface">${team.l}</td>
+                                        <td class="px-2 py-3 text-center text-on-surface">${team.gd > 0 ? '+' + team.gd : team.gd}</td>
+                                        <td class="px-4 py-3 text-center font-bold text-primary">${team.pts}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populatePredictorDropdowns() {
+            const homeSelect = document.getElementById('home-team');
+            const awaySelect = document.getElementById('away-team');
+            
+            let optionsHtml = '<option value="" data-code="">Select Team</option>';
+            groupsData.forEach(group => {
+                optionsHtml += `<optgroup label="${group.name}">`;
+                group.teams.forEach(team => {
+                    const teamId = team.name.toLowerCase().replace(/\s+/g, '_');
+                    optionsHtml += `<option value="${teamId}" data-code="${team.code}">${team.name}</option>`;
+                });
+                optionsHtml += `</optgroup>`;
+            });
+
+            homeSelect.innerHTML = optionsHtml;
+            awaySelect.innerHTML = optionsHtml;
+        }
+
+        function updateSelectedFlag(side) {
+            const select = document.getElementById(`${side}-team`);
+            const flagContainer = document.getElementById(`${side}-flag-container`);
+            const flagImg = document.getElementById(`${side}-flag-img`);
+            
+            const selectedOption = select.options[select.selectedIndex];
+            const countryCode = selectedOption.getAttribute('data-code');
+
+            if (countryCode && countryCode !== "") {
+                flagImg.src = getFlagUrl(countryCode);
+                flagContainer.classList.remove('hidden');
+                select.classList.add('pl-12');
+            } else {
+                flagContainer.classList.add('hidden');
+                select.classList.remove('pl-12');
+            }
+        }
+
+        function switchTab(tab) {
+            const predictorSec = document.getElementById('section-predictor');
+            const standingsSec = document.getElementById('section-standings');
+            const tabPredictor = document.getElementById('tab-predictor');
+            const tabStandings = document.getElementById('tab-standings');
+            const navPredict = document.getElementById('nav-predict');
+            const navStandings = document.getElementById('nav-standings');
+
+            if (tab === 'predictor') {
+                predictorSec.classList.remove('hidden');
+                standingsSec.classList.add('hidden');
+                
+                tabPredictor.classList.add('bg-primary', 'text-on-primary');
+                tabPredictor.classList.remove('text-outline');
+                tabStandings.classList.remove('bg-primary', 'text-on-primary');
+                tabStandings.classList.add('text-outline');
+
+                navPredict.classList.add('bg-primary-container', 'text-on-primary-container', 'rounded-full');
+                navPredict.classList.remove('text-outline');
+                navStandings.classList.remove('bg-primary-container', 'text-on-primary-container', 'rounded-full');
+                navStandings.classList.add('text-outline');
+            } else {
+                predictorSec.classList.add('hidden');
+                standingsSec.classList.remove('hidden');
+
+                tabStandings.classList.add('bg-primary', 'text-on-primary');
+                tabStandings.classList.remove('text-outline');
+                tabPredictor.classList.remove('bg-primary', 'text-on-primary');
+                tabPredictor.classList.add('text-outline');
+
+                navStandings.classList.add('bg-primary-container', 'text-on-primary-container', 'rounded-full');
+                navStandings.classList.remove('text-outline');
+                navPredict.classList.remove('bg-primary-container', 'text-on-primary-container', 'rounded-full');
+                navPredict.classList.add('text-outline');
+                
+                renderStandings();
+            }
+        }
+
+        function handlePredict(btn) {
+            const hSelect = document.getElementById('home-team');
+            const aSelect = document.getElementById('away-team');
+            const h = hSelect.value;
+            const a = aSelect.value;
+            const err = document.getElementById('error-msg');
+            const errText = document.getElementById('error-text');
+            const btnText = document.getElementById('btn-text');
+            const btnSpinner = document.getElementById('btn-spinner');
+            
+            btn.classList.remove('animate-tap');
+            void btn.offsetWidth; 
+            btn.classList.add('animate-tap');
+
+            if (!h || !a) {
+                errText.textContent = "Please select both teams.";
+                err.classList.remove('hidden');
+                return;
+            }
+
+            if (h === a) {
+                errText.textContent = "Please select two different teams.";
+                err.classList.remove('hidden');
+                return;
+            }
+            
+            err.classList.add('hidden');
+            
+            btn.disabled = true;
+            btnSpinner.classList.remove('hidden');
+            btnText.textContent = "Analyzing Tactics...";
+
+            const homeName = hSelect.options[hSelect.selectedIndex].text;
+            const awayName = aSelect.options[aSelect.selectedIndex].text;
+
+            fetch('http://localhost:8000/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ home_team: homeName, away_team: awayName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                btnSpinner.classList.add('hidden');
+                btnText.textContent = "Predict Match";
+
+                if (data.status === 'success') {
+                    alert(`Prediction: ${data.match}\nWinner: ${data.predicted_winner}`);
+                } else {
+                    errText.textContent = 'Server error: could not get prediction.';
+                    err.classList.remove('hidden');
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btnSpinner.classList.add('hidden');
+                btnText.textContent = "Predict Match";
+                errText.textContent = 'Unable to reach the prediction API.';
+                err.classList.remove('hidden');
+            });
+        }
+
+        function handleReset() {
+            document.getElementById('home-team').value = "";
+            document.getElementById('away-team').value = "";
+            document.getElementById('error-msg').classList.add('hidden');
+            updateSelectedFlag('home');
+            updateSelectedFlag('away');
+        }
+
+        window.onload = () => {
+            populatePredictorDropdowns();
+            renderStandings();
+        }
+    </script>
+</body></html>
