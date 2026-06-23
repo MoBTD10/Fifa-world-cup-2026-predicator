@@ -420,7 +420,7 @@
             const homeName = hSelect.options[hSelect.selectedIndex].text;
             const awayName = aSelect.options[aSelect.selectedIndex].text;
 
-            fetch('http://localhost:8000/predict', {
+            fetch('https://fifa-world-cup-2026-predicator.onrender.com/predict', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ home_team: homeName, away_team: awayName })
