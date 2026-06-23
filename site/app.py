@@ -21,11 +21,9 @@ class PredictionReq(BaseModel):
     away_team : str
 
 
-@app.get('/')
-def home():
-    return {'message':'this is the model page'}
 
-@app.post('/predict')
+
+@app.post('/')
 def predict(data : PredictionReq):
     home_team = data.home_team
     away_team = data.away_team
