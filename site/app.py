@@ -30,8 +30,10 @@ def predict(data : PredictionReq):
     away_rank = team_rank.get(away_team ,50)
 
     rank_diff = home_rank - away_rank
-    is_net = 1
-    featuers = np.array([[rank_diff , is_net]],dtype=float)
+    is_net = True
+    
+    net_val = 1 if is_net else 0 
+    featuers = np.array([[rank_diff , net_val]],dtype=float)
 
     pred_encoded = model.predict(featuers)[0]
     team = encoder.inverse_transform([pred_encoded])[0]
