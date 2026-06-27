@@ -37,7 +37,7 @@ def predict(data : PredictionReq):
               float(away_lines['away_team_rank'].iloc[-1]) if not away_lines.empty else 1.0 , 
               1.0 if data.neutral else 0.0
         ]
-        pred_num = model.predict([X_input])[0]
+        pred_num = int(model.predict([X_input])[0])
         if pred_num == 2:
               winner = data.home_team
         elif pred_num == 0:
