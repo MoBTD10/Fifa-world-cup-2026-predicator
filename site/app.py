@@ -33,8 +33,8 @@ def predict(data : PredictionReq):
               float(home_lines['home_rolling_conceded_5'].iloc[-1]) if not home_lines.empty else 1.0,
               float(away_lines['away_rolling_scored_5'].iloc[-1]) if not away_lines.empty else 1.0,
               float(away_lines['away_rolling_conceded_5'].iloc[-1]) if not away_lines.empty else 1.0,
-              float(home_lines['home_rank'].iloc[-1]) if not home_lines.empty else 1.0,
-              float(away_lines['away_rank'].iloc[-1]) if not away_lines.empty else 1.0 , 
+              float(home_lines['home_team_rank'].iloc[-1]) if not home_lines.empty else 1.0,
+              float(away_lines['away_team_rank'].iloc[-1]) if not away_lines.empty else 1.0 , 
               1.0 if data.neutral else 0.0
         ]
         pred_num = model.predict([X_input])[0]
