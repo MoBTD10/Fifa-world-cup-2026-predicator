@@ -4,10 +4,12 @@ from pydantic import BaseModel
 import random
 import joblib
 import numpy as np
+import pandas as pd
+
+
 app = FastAPI() 
-encoder = joblib.load('encoder.pkl')
-model = joblib.load('model.pkl')
-team_rank = joblib.load('team_rank_dict.pkl')
+model = joblib.load('Xgb_model.pkl')
+data_ = pd.read_csv('data.csv')
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,38 +21,27 @@ app.add_middleware(
 class PredictionReq(BaseModel):
     home_team : str
     away_team : str
+    neutral: bool
 
 
 @app.post('/predict')
 def predict(data : PredictionReq):
-    home_team = data.home_team
-    away_team = data.away_team
-
-    home_rank = team_rank.get(home_team ,50)
-    away_rank = team_rank.get(away_team ,50)
-
-    rank_diff = home_rank - away_rank
-    is_net = True
-    
-    net_val = 1 if is_net else 0 
-    featuers = np.array([[rank_diff , net_val]],dtype=float)
-
-    pred_encoded = model.predict(featuers)[0]
-    team = encoder.inverse_transform([pred_encoded])[0]
-    if team == "home":
-        winner = home_team
-        status_message = "winner"
-    elif team == "away":
-        winner = away_team
-        status_message = "winner"
-    else:
-        winner = "تعادل (Draw)"
-        status_message = "draw"
-        
-    return {
-        "status": "success",
-        "match": f"{home_team} vs {away_team}",
-        "predicted_winner": winner,
-        "result_type": status_message
-    }
-    
+        home_lines = data_[data_['home_team'] == data.home_team]
+        away_lines = data_[data_['away_team'] == data.away_team]
+        X_input = [
+              float(home_lines['home_rolling_scored_5'].iloc[-1]) if not home_lines.empty else 1.0,
+              float(home_lines['home_rolling_conceded_5'].iloc[-1]) if not home_lines.empty else 1.0,
+              float(away_lines['away_rolling_scored_5'].iloc[-1]) if not away_lines.empty else 1.0,
+              float(away_lines['away_rolling_conceded_5'].iloc[-1]) if not away_lines.empty else 1.0,
+              float(home_lines['home_rank'].iloc[-1]) if not home_lines.empty else 1.0,
+              float(away_lines['away_rank'].iloc[-1]) if not away_lines.empty else 1.0 , 
+              1.0 if data.neutral else 0.0
+        ]
+        pred_num = model.predict([X_input])[0]
+        if pred_num == 2:
+              winner = data.home_team
+        elif pred_num == 0:
+              winner = data.away_team
+        else:
+              winner='Draw'
+        return {'winner' : winner}

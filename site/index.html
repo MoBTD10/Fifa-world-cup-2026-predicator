@@ -152,6 +152,16 @@
 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
 </div>
 </div>
+<div class="w-full">
+<label class="block text-label-sm font-semibold text-outline mb-xs uppercase tracking-wider">Neutral Venue</label>
+<div class="relative">
+<select class="w-full p-md bg-background border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all appearance-none cursor-pointer text-on-surface" id="neutral-select">
+<option value="false">No</option>
+<option value="true">Yes</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
 </div>
 <button class="mt-lg w-full bg-primary-container text-on-primary-container font-headline-md py-md rounded-full transition-all hover:opacity-90 shadow-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" id="predict-btn" onclick="handlePredict(this)">
 <span class="" id="btn-text">Predict Match</span>
@@ -419,11 +429,12 @@
 
             const homeName = hSelect.options[hSelect.selectedIndex].text;
             const awayName = aSelect.options[aSelect.selectedIndex].text;
+            const neutralValue = document.getElementById('neutral-select').value === 'true';
 
             fetch('https://fifa-world-cup-2026-predicator.onrender.com/predict', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ home_team: homeName, away_team: awayName })
+                body: JSON.stringify({ home_team: homeName, away_team: awayName, neutral: neutralValue })
             })
             .then(response => response.json())
             .then(data => {
@@ -450,6 +461,7 @@
         function handleReset() {
             document.getElementById('home-team').value = "";
             document.getElementById('away-team').value = "";
+            document.getElementById('neutral-select').value = "false";
             document.getElementById('error-msg').classList.add('hidden');
             updateSelectedFlag('home');
             updateSelectedFlag('away');
