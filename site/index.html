@@ -431,7 +431,7 @@
             const awayName = aSelect.options[aSelect.selectedIndex].text;
             const neutralValue = document.getElementById('neutral-select').value === 'true';
 
-            fetch('https://fifa-world-cup-2026-predicator.onrender.com/predict', {
+            fetch('https://fifa-world-cup-2026-predicator.onrender.com/predict/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ home_team: homeName, away_team: awayName, neutral: neutralValue })
