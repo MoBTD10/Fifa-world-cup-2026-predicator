@@ -45,4 +45,8 @@ def predict(data : PredictionReq):
               winner = data.away_team
         else:
               winner='Draw'
-        return {'winner' : winner}
+        return {
+        "status": "success",
+        "match": f"{data.home_team} vs {data.away_team}",
+        "predicted_winner": winner
+    }
