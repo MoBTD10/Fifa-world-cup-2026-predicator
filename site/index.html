@@ -436,18 +436,19 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ home_team: homeName, away_team: awayName, neutral: neutralValue })
             })
-            .then(response => response.json())
-            .then(data => {
+            .then(async response => {
+                const data = await response.json().catch(() => null);
                 btn.disabled = false;
                 btnSpinner.classList.add('hidden');
                 btnText.textContent = "Predict Match";
 
-                if (data.status === 'success') {
-                    alert(`Prediction: ${data.match}\nWinner: ${data.predicted_winner}`);
-                } else {
+                if (!response.ok || !data || !data.winner) {
                     errText.textContent = 'Server error: could not get prediction.';
                     err.classList.remove('hidden');
+                    return;
                 }
+
+                alert(`Prediction result:\nWinner: ${data.winner}`);
             })
             .catch(() => {
                 btn.disabled = false;
