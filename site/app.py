@@ -24,6 +24,7 @@ class PredictionReq(BaseModel):
     neutral: bool
 
 
+@app.post('/predict')
 @app.post('/predict/')
 def predict(data : PredictionReq):
         home_lines = data_[data_['home_team'] == data.home_team]
