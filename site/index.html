@@ -437,24 +437,38 @@
                 body: JSON.stringify({ home_team: homeName, away_team: awayName, neutral: neutralValue })
             })
             .then(async response => {
-                const data = await response.json().catch(() => null);
+                const responseText = await response.text();
+                let data = null;
+                try {
+                    data = JSON.parse(responseText);
+                } catch {
+                    data = null;
+                }
+
                 btn.disabled = false;
                 btnSpinner.classList.add('hidden');
                 btnText.textContent = "Predict Match";
 
-                if (!response.ok || !data || !data.winner) {
-                    errText.textContent = 'Server error: could not get prediction.';
+                if (!response.ok) {
+                    errText.textContent = `Server error (${response.status}): ${responseText}`;
+                    err.classList.remove('hidden');
+                    return;
+                }
+
+                if (!data || !data.winner) {
+                    const message = responseText || 'could not get prediction.';
+                    errText.textContent = `Unexpected response: ${message}`;
                     err.classList.remove('hidden');
                     return;
                 }
 
                 alert(`Prediction result:\nWinner: ${data.winner}`);
             })
-            .catch(() => {
+            .catch(error => {
                 btn.disabled = false;
                 btnSpinner.classList.add('hidden');
                 btnText.textContent = "Predict Match";
-                errText.textContent = 'Unable to reach the prediction API.';
+                errText.textContent = `Unable to reach the prediction API. ${error.message || ''}`;
                 err.classList.remove('hidden');
             });
         }
